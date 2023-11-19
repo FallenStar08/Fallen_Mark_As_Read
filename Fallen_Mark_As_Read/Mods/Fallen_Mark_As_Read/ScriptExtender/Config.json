@@ -1,0 +1,5 @@
+{
+    "RequiredVersion": 10,
+    "ModTable": "Fallen_Mark_As_Read",
+    "FeatureFlags": ["Lua"]
+}
