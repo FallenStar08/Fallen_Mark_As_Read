@@ -114,8 +114,11 @@ function Start()
 end
 
 Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "before", function(root, item, inventoryHolder, addType)
-    if Osi.GetBookID(item) then
-        MarkBookAsRead(item)
+    local bookID=Osi.GetBookID(item)
+    if bookID then
+        if PersistentVars.readBooks[bookID] then
+            MarkBookAsRead(item)
+        end
     end
 end)
 
