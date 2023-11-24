@@ -10,13 +10,13 @@ Ext.Osiris.RegisterListener("GameBookInterfaceClosed", 2, "after", function(item
 end)
 
 
-Ext.Osiris.RegisterListener("CustomBookUIClosed", 2, "after", function(character, bookName)
-    --MarkBookAsRead(item)
-    BasicPrint({
-        character=character,
-        bookName=bookName
-    })
-end)
+-- Ext.Osiris.RegisterListener("CustomBookUIClosed", 2, "after", function(character, bookName)
+--     --MarkBookAsRead(item)
+--     BasicDebug({
+--         character=character,
+--         bookName=bookName
+--     })
+-- end)
 
 --Check all books and update their rarity if read
 function UpdateRarityForAllReadBooks()
@@ -44,7 +44,7 @@ function UpdateItemRarity(entity)
     else
         return
     end
-    BasicPrint(string.format("Updating Rarity for item : %s with bookID : %s",entity.Uuid.EntityUuid, Osi.GetBookID(entity.Uuid.EntityUuid)))
+    BasicDebug(string.format("Updating Rarity for item : %s with bookID : %s",entity.Uuid.EntityUuid, Osi.GetBookID(entity.Uuid.EntityUuid)))
 end
 
 --Update loca handle for read books

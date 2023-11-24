@@ -16,13 +16,17 @@ Config.default_config_tbl = {
 --                             Config IO functions                            --
 -- -------------------------------------------------------------------------- --
 
+--- Save a config table to a json file
+---@param filePath string the path of the json file
+---@param config table  the configuration table to save
 function Config.SaveConfig(filePath, config)
+    filePath=filePath or Config.config_json_file_path
+    config=config or Config.config_tbl
     local success, error_message = pcall(function()
         BasicPrint("Config.SaveConfig() - Config file saved")
         BasicDebug(config)
         JSON.LuaTableToFile(config, filePath)
     end)
-
     if not success then BasicWarning("Config.SaveConfig() - " .. error_message) end
 end
 
