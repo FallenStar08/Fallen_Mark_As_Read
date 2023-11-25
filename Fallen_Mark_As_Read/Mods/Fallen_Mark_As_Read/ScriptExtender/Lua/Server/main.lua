@@ -3,6 +3,8 @@ Ext.Require("Shared/_Globals.lua")
 Ext.Require("Shared/_Utils.lua")
 Ext.Require("Server/_Config.lua")
 
+RegisterModVariable("readBooks")
+Ext.Vars.RegisterModVariable(ModuleUUID, "readBooks", {})
 
 
 Ext.Osiris.RegisterListener("GameBookInterfaceClosed", 2, "after", function(item, character)
@@ -135,6 +137,11 @@ end
 
 function Start()
     if not Config.initDone then Config.Init() end
+    GetModVariables()
+    if not MyVars.readBooks then
+        MyVars.readBooks={}
+    end
+    table.insert(MyVars.readBooks,{"bozo"})
     if not PersistentVars.readBooks then PersistentVars.readBooks = {} end
     if not PersistentVars.fetchedOldBooks then
         UpdatePvarsWithAlreadyKnownBooks()
