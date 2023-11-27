@@ -4,14 +4,15 @@ Ext.Require("Shared/_Utils.lua")
 Ext.Require("Server/_Config.lua")
 
 RegisterModVariable("readBooks")
-Ext.Vars.RegisterModVariable(ModuleUUID, "readBooks", {})
+RegisterModVariable("fetchedOldBooks")
+--Ext.Vars.RegisterModVariable(ModuleUUID, "readBooks", {})
 
 
 Ext.Osiris.RegisterListener("GameBookInterfaceClosed", 2, "after", function(item, character)
     MarkBookAsRead(item)
 end)
 
-
+-- Custom book are pieces of shit that aren't working as they should, ignore this garbage
 -- Ext.Osiris.RegisterListener("CustomBookUIClosed", 2, "after", function(character, bookName)
 --     --MarkBookAsRead(item)
 --     BasicDebug({
@@ -27,7 +28,8 @@ function UpdateRarityForAllReadBooks()
     local allEntities = Ext.Entity.GetAllEntitiesWithComponent("ServerItem")
     for k, v in pairs(allEntities) do
         if Osi.GetBookID(v.Uuid.EntityUuid) then
-            if PersistentVars.readBooks[Osi.GetBookID(v.Uuid.EntityUuid)] then
+            --if PersistentVars.readBooks[Osi.GetBookID(v.Uuid.EntityUuid)] then
+            if MyVars.readBooks[Osi.GetBookID(v.Uuid.EntityUuid)] then
                 UpdateItemRarity(v)
             end
         end
@@ -46,12 +48,14 @@ function UpdateItemRarity(entity)
     else
         return
     end
-    BasicDebug(string.format("Updating Rarity for item : %s with bookID : %s",entity.Uuid.EntityUuid, Osi.GetBookID(entity.Uuid.EntityUuid)))
+    BasicDebug(string.format("Updating Rarity for item : %s with bookID : %s", entity.Uuid.EntityUuid,
+        Osi.GetBookID(entity.Uuid.EntityUuid)))
 end
 
 --Update loca handle for read books
 function MarkAllReadBooksAsRead()
-    for k, handle in pairs(PersistentVars.readBooks) do
+    --for k, handle in pairs(PersistentVars.readBooks) do
+    for k, handle in pairs(MyVars.readBooks) do
         UpdateBookName(handle)
     end
 end
@@ -62,9 +66,11 @@ function MarkBookAsRead(book)
     UpdateItemRarity(bookEntity)
     local bookId = Osi.GetBookID(book)
     local handle = Osi.GetDisplayName(book)
-    if not PersistentVars.readBooks[bookId] then
+    if not MyVars.readBooks[bookId] then
+        --if not PersistentVars.readBooks[bookId] then
         BasicDebug("MarkBookAsRead() - Marking unread book as read, bookID : " .. bookId)
-        PersistentVars.readBooks[bookId] = handle
+        --PersistentVars.readBooks[bookId] = handle
+        MyVars.readBooks[bookId] = handle
         if not HandleAlreadyPatched(handle) then
             UpdateBookName(handle)
         end
@@ -102,9 +108,12 @@ end
 --Check if we already changed the locas for this game session
 function HandlesAlreadyPatched()
     if not (SE_VERSION >= 10) then return true end
-    if PersistentVars.readBooks then
-        local firstKey = next(PersistentVars.readBooks)
-        local firstElement = PersistentVars.readBooks[firstKey]
+    if MyVars.readBooks then
+        --if PersistentVars.readBooks then
+        --local firstKey = next(PersistentVars.readBooks)
+        --local firstElement = PersistentVars.readBooks[firstKey]
+        local firstKey = next(MyVars.readBooks)
+        local firstElement = MyVars.readBooks[firstKey]
         local locaName = GetTranslatedString(firstElement)
         if HandleAlreadyPatched(firstElement) then
             BasicDebug("HandlesAlreadyPatched() - Handles already patched")
@@ -119,6 +128,7 @@ function HandlesAlreadyPatched()
     end
 end
 
+--Technically modvars now sadge
 function UpdatePvarsWithAlreadyKnownBooks()
     local items = Ext.Entity.GetAllEntitiesWithComponent("ServerItem")
     for k, item in pairs(items) do
@@ -127,8 +137,9 @@ function UpdatePvarsWithAlreadyKnownBooks()
             local bookId = Osi.GetBookID(uuid)
             if bookId then
                 local handle = Osi.GetDisplayName(uuid)
-                if not PersistentVars.readBooks[bookId] then
-                    PersistentVars.readBooks[bookId] = handle
+                --if not PersistentVars.readBooks[bookId] then
+                if not MyVars.readBooks[bookId] then
+                    MyVars.readBooks[bookId] = handle
                 end
             end
         end
@@ -137,15 +148,18 @@ end
 
 function Start()
     if not Config.initDone then Config.Init() end
-    GetModVariables()
+    MyVars=GetModVariables()
     if not MyVars.readBooks then
-        MyVars.readBooks={}
+        MyVars.readBooks = {}
     end
-    table.insert(MyVars.readBooks,{"bozo"})
-    if not PersistentVars.readBooks then PersistentVars.readBooks = {} end
-    if not PersistentVars.fetchedOldBooks then
+    --table.insert(MyVars.readBooks,{"bozo"})
+    --if not PersistentVars.readBooks then PersistentVars.readBooks = {} end
+    --if not PersistentVars.fetchedOldBooks then
+    if not MyVars.fetchedOldBooks then
+        BasicPrint("Fetching books read before installation, should be a one time thing...")
         UpdatePvarsWithAlreadyKnownBooks()
-        PersistentVars.fetchedOldBooks = true
+        MyVars.fetchedOldBooks = "true"
+        --PersistentVars.fetchedOldBooks = true
     end
     local time = MeasureExecutionTime(UpdateRarityForAllReadBooks)
     BasicPrint("Books rarity updated in " .. time .. " ms!")
@@ -162,7 +176,8 @@ end
 Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "before", function(root, item, inventoryHolder, addType)
     local bookID = Osi.GetBookID(item)
     if bookID then
-        if PersistentVars.readBooks[bookID] then
+        if MyVars.readBooks[bookID] then
+        --if PersistentVars.readBooks[bookID] then
             MarkBookAsRead(item)
         end
     end
@@ -173,6 +188,9 @@ Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", Start)
 Ext.Events.ResetCompleted:Subscribe(Start)
 
 Ext.Events.GameStateChanged:Subscribe(function(e)
+    if e.ToState == "Save" then
+        GetModVariables()["readBooks"]=MyVars["readBooks"]
+    end
     if e.FromState == "Save" and e.ToState == "Running" then
         UpdateRarityForAllReadBooks()
     end
