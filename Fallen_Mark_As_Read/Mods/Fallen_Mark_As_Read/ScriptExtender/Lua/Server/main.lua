@@ -23,15 +23,14 @@ end)
 
 --Check all books and update their rarity if read
 function UpdateRarityForAllReadBooks()
-    if not Config.GetValue(Config.config_tbl, "UPDATE_RARITY") == 1 then return end
+    if Config.GetValue(Config.config_tbl, "UPDATE_RARITY") == 0 then return end
     BasicDebug("UpdateRarityForAllReadBooks()")
-    local allEntities = Ext.Entity.GetAllEntitiesWithComponent("ServerItem")
-    for k, v in pairs(allEntities) do
-        if Osi.GetBookID(v.Uuid.EntityUuid) then
-            --if PersistentVars.readBooks[Osi.GetBookID(v.Uuid.EntityUuid)] then
-            if MyVars.readBooks[Osi.GetBookID(v.Uuid.EntityUuid)] then
-                UpdateItemRarity(v)
-            end
+    for k, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerItem")) do
+        local bookID = Osi.GetBookID(entity.Uuid.EntityUuid)
+        -- Check if the book ID exists and is marked as read
+        if bookID and MyVars.readBooks[bookID] then
+            -- Update the item rarity
+            UpdateItemRarity(entity)
         end
     end
 end
@@ -67,9 +66,7 @@ function MarkBookAsRead(book)
     local bookId = Osi.GetBookID(book)
     local handle = Osi.GetDisplayName(book)
     if not MyVars.readBooks[bookId] then
-        --if not PersistentVars.readBooks[bookId] then
         BasicDebug("MarkBookAsRead() - Marking unread book as read, bookID : " .. bookId)
-        --PersistentVars.readBooks[bookId] = handle
         MyVars.readBooks[bookId] = handle
         if not HandleAlreadyPatched(handle) then
             UpdateBookName(handle)
@@ -88,20 +85,21 @@ function UpdateBookName(handle)
     end
 end
 
---check a if a specific loca is already changed
+--check if a specific loca is already changed
 function HandleAlreadyPatched(handle)
     if not (SE_VERSION >= 10) then return true end
+
     local locaName = GetTranslatedString(handle)
     local prefix, suffix = Config.GetValue(Config.config_tbl, "READ_BOOK_PREFIX"),
         Config.GetValue(Config.config_tbl, "READ_BOOK_SUFFIX")
-    if #prefix > 0 and StartsWith(locaName, prefix) then
-        --BasicDebug("HandlesAlreadyPatched() - Handles already patched")
-        return true
-    elseif #suffix > 0 and EndsWith(locaName, suffix) then
-        --BasicDebug("HandlesAlreadyPatched() - Handles already patched")
+
+    if (#prefix == 0 and #suffix == 0) or
+        (#prefix > 0 and StartsWith(locaName, prefix)) or
+        (#suffix > 0 and EndsWith(locaName, suffix)) then
+        BasicDebug("HandlesAlreadyPatched() - Handles already patched")
         return true
     end
-    --BasicDebug("HandlesAlreadyPatched() - Handles not already patched")
+    BasicDebug("HandlesAlreadyPatched() - Handles not already patched")
     return false
 end
 
@@ -109,9 +107,6 @@ end
 function HandlesAlreadyPatched()
     if not (SE_VERSION >= 10) then return true end
     if MyVars.readBooks then
-        --if PersistentVars.readBooks then
-        --local firstKey = next(PersistentVars.readBooks)
-        --local firstElement = PersistentVars.readBooks[firstKey]
         local firstKey = next(MyVars.readBooks)
         local firstElement = MyVars.readBooks[firstKey]
         local locaName = GetTranslatedString(firstElement)
@@ -137,7 +132,6 @@ function UpdatePvarsWithAlreadyKnownBooks()
             local bookId = Osi.GetBookID(uuid)
             if bookId then
                 local handle = Osi.GetDisplayName(uuid)
-                --if not PersistentVars.readBooks[bookId] then
                 if not MyVars.readBooks[bookId] then
                     MyVars.readBooks[bookId] = handle
                 end
@@ -148,21 +142,17 @@ end
 
 function Start()
     if not Config.initDone then Config.Init() end
-    MyVars=GetModVariables()
+    MyVars = GetModVariables()
     if not MyVars.readBooks then
         MyVars.readBooks = {}
     end
-    --table.insert(MyVars.readBooks,{"bozo"})
-    --if not PersistentVars.readBooks then PersistentVars.readBooks = {} end
-    --if not PersistentVars.fetchedOldBooks then
     if not MyVars.fetchedOldBooks then
         BasicPrint("Fetching books read before installation, should be a one time thing...")
         UpdatePvarsWithAlreadyKnownBooks()
         MyVars.fetchedOldBooks = "true"
-        --PersistentVars.fetchedOldBooks = true
     end
     local time = MeasureExecutionTime(UpdateRarityForAllReadBooks)
-    BasicPrint("Books rarity updated in " .. time .. " ms!")
+    BasicPrint(string.format("Books rarity updated in %s ms!", time))
     if SE_VERSION >= 10 then
         BasicPrint(string.format("Prefix for read books : %s - Suffix for read books : %s",
             Config.GetValue(Config.config_tbl, "READ_BOOK_PREFIX"),
@@ -177,7 +167,7 @@ Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "before", function(root, item,
     local bookID = Osi.GetBookID(item)
     if bookID then
         if MyVars.readBooks[bookID] then
-        --if PersistentVars.readBooks[bookID] then
+            --if PersistentVars.readBooks[bookID] then
             MarkBookAsRead(item)
         end
     end
@@ -189,7 +179,7 @@ Ext.Events.ResetCompleted:Subscribe(Start)
 
 Ext.Events.GameStateChanged:Subscribe(function(e)
     if e.ToState == "Save" then
-        GetModVariables()["readBooks"]=MyVars["readBooks"]
+        GetModVariables()["readBooks"] = MyVars["readBooks"]
     end
     if e.FromState == "Save" and e.ToState == "Running" then
         UpdateRarityForAllReadBooks()
