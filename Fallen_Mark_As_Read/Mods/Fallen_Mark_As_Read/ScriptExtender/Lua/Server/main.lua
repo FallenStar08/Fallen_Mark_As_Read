@@ -1,35 +1,22 @@
 Ext.Require("Server/_ModInfos.lua")
 Ext.Require("Shared/_Globals.lua")
 Ext.Require("Shared/_Utils.lua")
-Ext.Require("Server/_Config.lua")
+Ext.Require("Shared/_Config.lua")
 
 RegisterModVariable("readBooks")
 RegisterModVariable("fetchedOldBooks")
---Ext.Vars.RegisterModVariable(ModuleUUID, "readBooks", {})
-
 
 Ext.Osiris.RegisterListener("GameBookInterfaceClosed", 2, "after", function(item, character)
     MarkBookAsRead(item)
 end)
 
--- Custom book are pieces of shit that aren't working as they should, ignore this garbage
--- Ext.Osiris.RegisterListener("CustomBookUIClosed", 2, "after", function(character, bookName)
---     --MarkBookAsRead(item)
---     BasicDebug({
---         character=character,
---         bookName=bookName
---     })
--- end)
-
---Check all books and update their rarity if read
+--Update rarity to green for all books in ModVars
 function UpdateRarityForAllReadBooks()
-    if Config.GetValue(Config.config_tbl, "UPDATE_RARITY") == 0 then return end
+    if CONFIG.UPDATE_RARITY == 0 then return end
     BasicDebug("UpdateRarityForAllReadBooks()")
     for k, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerItem")) do
         local bookID = Osi.GetBookID(entity.Uuid.EntityUuid)
-        -- Check if the book ID exists and is marked as read
         if bookID and MyVars.readBooks[bookID] then
-            -- Update the item rarity
             UpdateItemRarity(entity)
         end
     end
@@ -37,7 +24,7 @@ end
 
 --Updata rarity to green for an item entity
 function UpdateItemRarity(entity)
-    if Config.GetValue(Config.config_tbl, "UPDATE_RARITY") == 1 then
+    if CONFIG.UPDATE_RARITY == 1 then
         entity.Value.Rarity = 1
         entity:Replicate("Value")
         if not entity.Health then
@@ -53,7 +40,6 @@ end
 
 --Update loca handle for read books
 function MarkAllReadBooksAsRead()
-    --for k, handle in pairs(PersistentVars.readBooks) do
     for k, handle in pairs(MyVars.readBooks) do
         UpdateBookName(handle)
     end
@@ -77,10 +63,9 @@ end
 --Update book name with pre/suf
 function UpdateBookName(handle)
     if SE_VERSION >= 10 then
-        BasicDebug("UpdateBookName() - Before Name Update : " .. GetTranslatedString(handle))
-        UpdateTranslatedString(handle,
-            Config.GetValue(Config.config_tbl, "READ_BOOK_PREFIX") ..
-            GetTranslatedString(handle) .. Config.GetValue(Config.config_tbl, "READ_BOOK_SUFFIX"))
+        local translateString=GetTranslatedString(handle)
+        BasicDebug("UpdateBookName() - Before Name Update : " .. translateString)
+        UpdateTranslatedString(handle,CONFIG.READ_BOOK_PREFIX..translateString..CONFIG.READ_BOOK_SUFFIX)
         BasicDebug("UpdateBookName() - After Name Update : " .. GetTranslatedString(handle))
     end
 end
@@ -90,9 +75,7 @@ function HandleAlreadyPatched(handle)
     if not (SE_VERSION >= 10) then return true end
 
     local locaName = GetTranslatedString(handle)
-    local prefix, suffix = Config.GetValue(Config.config_tbl, "READ_BOOK_PREFIX"),
-        Config.GetValue(Config.config_tbl, "READ_BOOK_SUFFIX")
-
+    local prefix, suffix = CONFIG.READ_BOOK_PREFIX,CONFIG.READ_BOOK_SUFFIX
     if (#prefix == 0 and #suffix == 0) or
         (#prefix > 0 and StartsWith(locaName, prefix)) or
         (#suffix > 0 and EndsWith(locaName, suffix)) then
@@ -141,7 +124,7 @@ function UpdatePvarsWithAlreadyKnownBooks()
 end
 
 function Start()
-    if not Config.initDone then Config.Init() end
+    if not CONFIG then InitConfig() end
     MyVars = GetModVariables()
     if not MyVars.readBooks then
         MyVars.readBooks = {}
@@ -155,8 +138,7 @@ function Start()
     BasicPrint(string.format("Books rarity updated in %s ms!", time))
     if SE_VERSION >= 10 then
         BasicPrint(string.format("Prefix for read books : %s - Suffix for read books : %s",
-            Config.GetValue(Config.config_tbl, "READ_BOOK_PREFIX"),
-            Config.GetValue(Config.config_tbl, "READ_BOOK_SUFFIX")))
+            CONFIG.READ_BOOK_PREFIX, CONFIG.READ_BOOK_SUFFIX))
         if not HandlesAlreadyPatched() then
             MarkAllReadBooksAsRead()
         end
@@ -167,7 +149,6 @@ Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "before", function(root, item,
     local bookID = Osi.GetBookID(item)
     if bookID then
         if MyVars.readBooks[bookID] then
-            --if PersistentVars.readBooks[bookID] then
             MarkBookAsRead(item)
         end
     end
@@ -185,3 +166,4 @@ Ext.Events.GameStateChanged:Subscribe(function(e)
         UpdateRarityForAllReadBooks()
     end
 end)
+
