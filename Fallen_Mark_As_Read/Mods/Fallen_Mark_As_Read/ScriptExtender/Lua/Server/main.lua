@@ -124,7 +124,7 @@ function UpdatePvarsWithAlreadyKnownBooks()
 end
 
 function Start()
-    if not CONFIG then InitConfig() end
+    if not CONFIG then CONFIG=InitConfig() end
     MyVars = GetModVariables()
     if not MyVars.readBooks then
         MyVars.readBooks = {}
