@@ -5,6 +5,7 @@ Ext.Require("Shared/_Config.lua")
 
 RegisterModVariable("readBooks")
 RegisterModVariable("fetchedOldBooks")
+MOD_READY=false
 
 Ext.Osiris.RegisterListener("GameBookInterfaceClosed", 2, "after", function(item, character)
     MarkBookAsRead(item)
@@ -129,6 +130,7 @@ function Start()
     if not MyVars.readBooks then
         MyVars.readBooks = {}
     end
+    MOD_READY=true
     if not MyVars.fetchedOldBooks then
         BasicPrint("Fetching books read before installation, should be a one time thing...")
         UpdatePvarsWithAlreadyKnownBooks()
@@ -147,22 +149,23 @@ end
 
 Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "before", function(root, item, inventoryHolder, addType)
     local bookID = Osi.GetBookID(item)
-    if bookID then
-        if MyVars.readBooks[bookID] then
+    if bookID and MOD_READY then
+        if MyVars.readBooks and MyVars.readBooks[bookID] then
             MarkBookAsRead(item)
         end
     end
 end)
+
 
 Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", Start)
 
 Ext.Events.ResetCompleted:Subscribe(Start)
 
 Ext.Events.GameStateChanged:Subscribe(function(e)
-    if e.ToState == "Save" then
+    if e.ToState == "Save" and MOD_READY then
         GetModVariables()["readBooks"] = MyVars["readBooks"]
     end
-    if e.FromState == "Save" and e.ToState == "Running" then
+    if e.FromState == "Save" and e.ToState == "Running" and MOD_READY then
         UpdateRarityForAllReadBooks()
     end
 end)
