@@ -16,9 +16,11 @@ function UpdateRarityForAllReadBooks()
     if CONFIG.UPDATE_RARITY == 0 then return end
     BasicDebug("UpdateRarityForAllReadBooks()")
     for k, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerItem")) do
-        local bookID = Osi.GetBookID(entity.Uuid.EntityUuid)
-        if bookID and MyVars.readBooks[bookID] then
-            UpdateItemRarity(entity)
+        if entity.Uuid and entity.Uuid.EntityUuid then
+            local bookID = Osi.GetBookID(entity.Uuid.EntityUuid)
+            if bookID and MyVars.readBooks[bookID] then
+                UpdateItemRarity(entity)
+            end
         end
     end
 end
