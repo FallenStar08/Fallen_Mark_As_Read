@@ -113,7 +113,7 @@ end
 function UpdatePvarsWithAlreadyKnownBooks()
     local items = Ext.Entity.GetAllEntitiesWithComponent("ServerItem")
     for k, item in pairs(items) do
-        if item.ServerItem.Item.Known == true then
+        if item.ServerItem.Known == true then
             local uuid = item.Uuid.EntityUuid
             local bookId = Osi.GetBookID(uuid)
             if bookId then
