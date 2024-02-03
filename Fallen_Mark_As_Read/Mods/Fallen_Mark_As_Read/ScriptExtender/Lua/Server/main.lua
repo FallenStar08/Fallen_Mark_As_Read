@@ -75,15 +75,17 @@ function HandleAlreadyPatched(handle)
     if not (SE_VERSION >= 10) then return true end
 
     local locaName = GetTranslatedString(handle)
-    local prefix, suffix = CONFIG.READ_BOOK_PREFIX,CONFIG.READ_BOOK_SUFFIX
-    if (#prefix == 0 and #suffix == 0) or
-        (#prefix > 0 and StartsWith(locaName, prefix)) or
-        (#suffix > 0 and EndsWith(locaName, suffix)) then
-        BasicDebug("HandlesAlreadyPatched() - Handles already patched")
-        return true
+    if locaName then
+        local prefix, suffix = CONFIG.READ_BOOK_PREFIX,CONFIG.READ_BOOK_SUFFIX
+        if (#prefix == 0 and #suffix == 0) or
+            (#prefix > 0 and StartsWith(locaName, prefix)) or
+            (#suffix > 0 and EndsWith(locaName, suffix)) then
+            BasicDebug("HandlesAlreadyPatched() - Handles already patched")
+            return true
+        end
+        BasicDebug("HandlesAlreadyPatched() - Handles not already patched")
+        return false
     end
-    BasicDebug("HandlesAlreadyPatched() - Handles not already patched")
-    return false
 end
 
 --Check if we already changed the locas for this game session
@@ -145,6 +147,8 @@ function Start()
         end
     end
 end
+
+
 
 Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "before", function(root, item, inventoryHolder, addType)
     local bookID = Osi.GetBookID(item)
