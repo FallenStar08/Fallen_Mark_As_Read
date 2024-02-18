@@ -148,8 +148,6 @@ function Start()
     end
 end
 
-
-
 Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "before", function(root, item, inventoryHolder, addType)
     local bookID = Osi.GetBookID(item)
     if bookID and MOD_READY then
