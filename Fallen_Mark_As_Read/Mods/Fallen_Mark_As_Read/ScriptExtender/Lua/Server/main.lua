@@ -1,8 +1,7 @@
-
-
 RegisterModVariable("readBooks")
 RegisterModVariable("fetchedOldBooks")
-MOD_READY=false
+MOD_READY = false
+MCMCONFIG = Mods.BG3MCM.MCMAPI
 
 Ext.Osiris.RegisterListener("GameBookInterfaceClosed", 2, "after", function(item, character)
     MarkBookAsRead(item)
@@ -10,7 +9,7 @@ end)
 
 --Update rarity to green for all books in ModVars
 function UpdateRarityForAllReadBooks()
-    if CONFIG.UPDATE_RARITY == 0 then return end
+    if MCMCONFIG:GetSettingValue("UPDATE_RARITY", MOD_INFO.MOD_UUID) == false then return end
     BasicDebug("UpdateRarityForAllReadBooks()")
     for k, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerItem")) do
         if entity.Uuid and entity.Uuid.EntityUuid then
@@ -24,7 +23,7 @@ end
 
 --Updata rarity to green for an item entity
 function UpdateItemRarity(entity)
-    if CONFIG.UPDATE_RARITY == 1 then
+    if MCMCONFIG:GetSettingValue("UPDATE_RARITY", MOD_INFO.MOD_UUID) == true then
         entity.Value.Rarity = 1
         entity:Replicate("Value")
         if not entity.Health then
@@ -63,9 +62,11 @@ end
 --Update book name with pre/suf
 function UpdateBookName(handle)
     if SE_VERSION >= 10 then
-        local translateString=GetTranslatedString(handle)
+        local translateString = GetTranslatedString(handle)
         BasicDebug("UpdateBookName() - Before Name Update : " .. translateString)
-        UpdateTranslatedString(handle,CONFIG.READ_BOOK_PREFIX..translateString..CONFIG.READ_BOOK_SUFFIX)
+        UpdateTranslatedString(handle,
+            MCMCONFIG:GetSettingValue("READ_BOOK_PREFIX", MOD_INFO.MOD_UUID) ..
+            translateString .. MCMCONFIG:GetSettingValue("READ_BOOK_SUFFIX", MOD_INFO.MOD_UUID))
         BasicDebug("UpdateBookName() - After Name Update : " .. GetTranslatedString(handle))
     end
 end
@@ -76,7 +77,8 @@ function HandleAlreadyPatched(handle)
 
     local locaName = GetTranslatedString(handle)
     if locaName then
-        local prefix, suffix = CONFIG.READ_BOOK_PREFIX,CONFIG.READ_BOOK_SUFFIX
+        local prefix, suffix = MCMCONFIG:GetSettingValue("READ_BOOK_PREFIX", MOD_INFO.MOD_UUID),
+            MCMCONFIG:GetSettingValue("READ_BOOK_SUFFIX", MOD_INFO.MOD_UUID)
         if (#prefix == 0 and #suffix == 0) or
             (#prefix > 0 and StartsWith(locaName, prefix)) or
             (#suffix > 0 and EndsWith(locaName, suffix)) then
@@ -110,6 +112,7 @@ end
 
 --Technically modvars now sadge
 function UpdatePvarsWithAlreadyKnownBooks()
+    ---@type Entity
     local items = Ext.Entity.GetAllEntitiesWithComponent("ServerItem")
     for k, item in pairs(items) do
         if item.ServerItem.Known == true then
@@ -126,12 +129,11 @@ function UpdatePvarsWithAlreadyKnownBooks()
 end
 
 function Start()
-    if not CONFIG then CONFIG=InitConfig() end
     MyVars = GetModVariables()
     if not MyVars.readBooks then
         MyVars.readBooks = {}
     end
-    MOD_READY=true
+    MOD_READY = true
     if not MyVars.fetchedOldBooks then
         BasicPrint("Fetching books read before installation, should be a one time thing...")
         UpdatePvarsWithAlreadyKnownBooks()
@@ -141,7 +143,8 @@ function Start()
     BasicPrint(string.format("Books rarity updated in %s ms!", time))
     if SE_VERSION >= 10 then
         BasicPrint(string.format("Prefix for read books : %s - Suffix for read books : %s",
-            CONFIG.READ_BOOK_PREFIX, CONFIG.READ_BOOK_SUFFIX))
+            MCMCONFIG:GetSettingValue("READ_BOOK_PREFIX", MOD_INFO.MOD_UUID),
+            MCMCONFIG:GetSettingValue("READ_BOOK_SUFFIX", MOD_INFO.MOD_UUID)))
         if not HandlesAlreadyPatched() then
             MarkAllReadBooksAsRead()
         end
@@ -170,4 +173,3 @@ Ext.Events.GameStateChanged:Subscribe(function(e)
         UpdateRarityForAllReadBooks()
     end
 end)
-

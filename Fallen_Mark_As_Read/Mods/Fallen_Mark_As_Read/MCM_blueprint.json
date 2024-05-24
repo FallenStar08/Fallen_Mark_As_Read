@@ -1,0 +1,85 @@
+{
+    "SchemaVersion": 1,
+    "ModName": "Mark books as read",
+    "Tabs": [
+        {
+            "TabName": "General",
+            "TabId": "general",
+            "Settings": [
+                {
+                    "Id": "MOD_ENABLED",
+                    "Name": "Enable mod",
+                    "Type": "checkbox",
+                    "Default": true,
+                    "Description": "Toggle the mod on/off without uninstalling it.",
+                    "Handles": {
+                        "NameHandle": "h56b2bab51888486da0104d9e6990f1d93151",
+                        "DescriptionHandle": "h22361e3d777f4387bab90f50f71e5afb76db"
+                    }
+                }
+            ]
+        },
+        {
+            "TabName": "Features",
+            "TabId": "features",
+            "Sections": [
+                {
+                    "SectionId": "GENERAL_SETTINGS",
+                    "SectionName": "MBAR features",
+                    "Settings": [
+                        {
+                            "Id": "UPDATE_RARITY",
+                            "Name": "Update read books rarity",
+                            "Type": "checkbox",
+                            "Default": true,
+                            "Handles": {
+                                "NameHandle": "h9772aee3832b49dcb7069210380f6542360e",
+                                "TooltipHandle": "hf572e1815cb244039806655f8d1558a74383"
+                            },
+                            "Tooltip": "Wheter to update the book rarity when read"
+                        },
+                        {
+                            "Id": "READ_BOOK_PREFIX",
+                            "Name": "Read book prefix",
+                            "Type": "text",
+                            "Default": "[#",
+                            "Handles": {
+                                "NameHandle": "h2cc857ae3cec46308667926122aaf191a208",
+                                "TooltipHandle": "he7434f404f704342a1b32cb70f1ab5479gcb"
+                            },
+                            "Tooltip": "Prefix appended at the start of read books names"
+                        },
+                        {
+                            "Id": "READ_BOOK_SUFFIX",
+                            "Name": "Read book suffix",
+                            "Type": "text",
+                            "Default": "#]",
+                            "Handles": {
+                                "NameHandle": "h4344cd70abdf44238a2559580ddbe8aa45fd",
+                                "TooltipHandle": "hc0d8ea81d7414d108b6da4c18c42596bg9g7"
+                            },
+                            "Tooltip": "Suffix appended at the end of read books names"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "TabName": "Debug",
+            "TabId": "debug",
+            "Settings": [
+                {
+                    "Id": "debug_level",
+                    "Name": "Debug level",
+                    "Type": "slider_int",
+                    "Default": 3,
+                    "Tooltip": "Debug level for the mod, used mainly for determining which messages to print",
+                    "Options": {
+                        "Min": 0,
+                        "Max": 4
+                    }
+                }
+            ]
+        }
+    ]
+}
