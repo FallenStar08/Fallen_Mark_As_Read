@@ -7,4 +7,6 @@
 	<content contentuid="he7434f404f704342a1b32cb70f1ab5479gcb" version="1">Prefix appended at the start of read books names, requires a reload to take effect</content>
 	<content contentuid="h4344cd70abdf44238a2559580ddbe8aa45fd" version="1">Read book suffix</content>
 	<content contentuid="hc0d8ea81d7414d108b6da4c18c42596bg9g7" version="1">Suffix appended at the end of read books names, requires a reload to take effect</content>
+    <content contentuid="hc5a8d296043d418b86712026d61bd51006b4" version="1">The rarity the books will be updated to once read</content>
+    <content contentuid="hcdb8c321992e4550a302364f97e255dcb83d" version="1">Rarity, from green to orange</content>
 </contentList>

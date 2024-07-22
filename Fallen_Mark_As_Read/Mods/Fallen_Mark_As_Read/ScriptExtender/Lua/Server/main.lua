@@ -1,7 +1,8 @@
 RegisterModVariable("readBooks")
 RegisterModVariable("fetchedOldBooks")
 MOD_READY = false
-MCMCONFIG = Mods.BG3MCM.MCMAPI
+
+ModifiedHandles = {}
 
 Ext.Osiris.RegisterListener("GameBookInterfaceClosed", 2, "after", function(item, character)
     MarkBookAsRead(item)
@@ -9,22 +10,23 @@ end)
 
 --Update rarity to green for all books in ModVars
 function UpdateRarityForAllReadBooks()
-    if MCMCONFIG:GetSettingValue("UPDATE_RARITY", MOD_INFO.MOD_UUID) == false then return end
+    if GetMCM("UPDATE_RARITY") == false then return end
+    local rarity = GetMCM("RARITY")
     BasicDebug("UpdateRarityForAllReadBooks()")
     for k, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerItem")) do
         if entity.Uuid and entity.Uuid.EntityUuid then
             local bookID = Osi.GetBookID(entity.Uuid.EntityUuid)
             if bookID and MyVars.readBooks[bookID] then
-                UpdateItemRarity(entity)
+                UpdateItemRarity(entity, rarity)
             end
         end
     end
 end
 
 --Updata rarity to green for an item entity
-function UpdateItemRarity(entity)
-    if MCMCONFIG:GetSettingValue("UPDATE_RARITY", MOD_INFO.MOD_UUID) == true then
-        entity.Value.Rarity = 1
+function UpdateItemRarity(entity, rarity)
+    if GetMCM("UPDATE_RARITY") == true then
+        entity.Value.Rarity = rarity
         entity:Replicate("Value")
         if not entity.Health then
             entity:CreateComponent("Health")
@@ -47,7 +49,7 @@ end
 --function to add to list of read books & do cosmetic changes
 function MarkBookAsRead(book)
     local bookEntity = Ext.Entity.Get(book)
-    UpdateItemRarity(bookEntity)
+    UpdateItemRarity(bookEntity, GetMCM("RARITY"))
     local bookId = Osi.GetBookID(book)
     local handle = Osi.GetDisplayName(book)
     if not MyVars.readBooks[bookId] then
@@ -61,14 +63,13 @@ end
 
 --Update book name with pre/suf
 function UpdateBookName(handle)
-    if SE_VERSION >= 10 then
-        local translateString = GetTranslatedString(handle)
-        BasicDebug("UpdateBookName() - Before Name Update : " .. translateString)
-        UpdateTranslatedString(handle,
-            MCMCONFIG:GetSettingValue("READ_BOOK_PREFIX", MOD_INFO.MOD_UUID) ..
-            translateString .. MCMCONFIG:GetSettingValue("READ_BOOK_SUFFIX", MOD_INFO.MOD_UUID))
-        BasicDebug("UpdateBookName() - After Name Update : " .. GetTranslatedString(handle))
-    end
+    local translateString = GetTranslatedString(handle)
+    ModifiedHandles[handle] = GetTranslatedString(handle)
+    BasicDebug("UpdateBookName() - Before Name Update : " .. translateString)
+    UpdateTranslatedString(handle,
+        GetMCM("READ_BOOK_PREFIX") ..
+        translateString .. GetMCM("READ_BOOK_SUFFIX"))
+    BasicDebug("UpdateBookName() - After Name Update : " .. GetTranslatedString(handle))
 end
 
 --check if a specific loca is already changed
@@ -77,8 +78,8 @@ function HandleAlreadyPatched(handle)
 
     local locaName = GetTranslatedString(handle)
     if locaName then
-        local prefix, suffix = MCMCONFIG:GetSettingValue("READ_BOOK_PREFIX", MOD_INFO.MOD_UUID),
-            MCMCONFIG:GetSettingValue("READ_BOOK_SUFFIX", MOD_INFO.MOD_UUID)
+        local prefix, suffix = GetMCM("READ_BOOK_PREFIX"),
+            GetMCM("READ_BOOK_SUFFIX")
         if (#prefix == 0 and #suffix == 0) or
             (#prefix > 0 and StartsWith(locaName, prefix)) or
             (#suffix > 0 and EndsWith(locaName, suffix)) then
@@ -96,7 +97,6 @@ function HandlesAlreadyPatched()
     if MyVars.readBooks then
         local firstKey = next(MyVars.readBooks)
         local firstElement = MyVars.readBooks[firstKey]
-        local locaName = GetTranslatedString(firstElement)
         if HandleAlreadyPatched(firstElement) then
             BasicDebug("HandlesAlreadyPatched() - Handles already patched")
             return true
@@ -128,6 +128,12 @@ function UpdatePvarsWithAlreadyKnownBooks()
     end
 end
 
+function RestoreHandles()
+    for handle, name in pairs(ModifiedHandles) do
+        UpdateTranslatedString(handle, name)
+    end
+end
+
 function Start()
     MyVars = GetModVariables()
     if not MyVars.readBooks then
@@ -141,13 +147,13 @@ function Start()
     end
     local time = MeasureExecutionTime(UpdateRarityForAllReadBooks)
     BasicPrint(string.format("Books rarity updated in %s ms!", time))
-    if SE_VERSION >= 10 then
-        BasicPrint(string.format("Prefix for read books : %s - Suffix for read books : %s",
-            MCMCONFIG:GetSettingValue("READ_BOOK_PREFIX", MOD_INFO.MOD_UUID),
-            MCMCONFIG:GetSettingValue("READ_BOOK_SUFFIX", MOD_INFO.MOD_UUID)))
-        if not HandlesAlreadyPatched() then
-            MarkAllReadBooksAsRead()
-        end
+    BasicPrint(string.format("Prefix for read books : %s - Suffix for read books : %s",
+        GetMCM("READ_BOOK_PREFIX"),
+        GetMCM("READ_BOOK_SUFFIX")))
+    --This is dirty but fuck it we ball
+    RestoreHandles()
+    if not HandlesAlreadyPatched() then
+        MarkAllReadBooksAsRead()
     end
 end
 
@@ -171,5 +177,23 @@ Ext.Events.GameStateChanged:Subscribe(function(e)
     end
     if e.FromState == "Save" and e.ToState == "Running" and MOD_READY then
         UpdateRarityForAllReadBooks()
+    end
+end)
+
+
+-- -------------------------------------------------------------------------- --
+--                                     MCM                                    --
+-- -------------------------------------------------------------------------- --
+
+local debouncedStart = Debounce(Start, 0.800)
+
+Ext.RegisterNetListener("MCM_Saved_Setting", function(call, payload)
+    local data = Ext.Json.Parse(payload)
+    if not data or data.modGUID ~= ModuleUUID or not data.settingId then
+        return
+    end
+
+    if data.settingId == "RARITY" or data.settingId == "READ_BOOK_PREFIX" or data.settingId == "READ_BOOK_SUFFIX" then
+        debouncedStart()
     end
 end)

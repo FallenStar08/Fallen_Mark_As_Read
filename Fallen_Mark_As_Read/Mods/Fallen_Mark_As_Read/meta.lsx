@@ -7,10 +7,11 @@
         <node id="Dependencies">
           <children>
             <node id="ModuleShortDesc">
-              <attribute id="Folder" value="BG3MCM" type="LSString" />
-              <attribute id="Name" value="Mod Configuration Menu" type="LSString" />
-              <attribute id="UUID" value="755a8a72-407f-4f0d-9a33-274ac0f0b53d" type="FixedString" />
-              <attribute id="Version64" value="36591749119868928" type="int64" />
+              <attribute id="Folder" type="LSWString" value="BG3MCM" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="BG3MCM" />
+              <attribute id="UUID" type="FixedString" value="755a8a72-407f-4f0d-9a33-274ac0f0b53d" />
+              <attribute id="Version64" type="int64" value="36028797018963968" />
             </node>
           </children>
         </node>
@@ -31,10 +32,10 @@
           <attribute id="Tags" type="LSWString" value="" />
           <attribute id="Type" type="FixedString" value="Add-on" />
           <attribute id="UUID" type="FixedString" value="c72d9f6a-a6e4-48b1-98c0-0ecdc7c31cf7" />
-          <attribute id="Version64" type="int64" value="36591746972385280" />
+          <attribute id="Version64" type="int64" value="36591757709803520" />
           <children>
             <node id="PublishVersion">
-              <attribute id="Version64" type="int64" value="36591746972385280" />
+              <attribute id="Version64" type="int64" value="36591757709803520" />
             </node>
             <node id="Scripts" />
             <node id="TargetModes">

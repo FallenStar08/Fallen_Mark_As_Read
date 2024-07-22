@@ -2,10 +2,12 @@
 <contentList>
 
 	<content contentuid="h9772aee3832b49dcb7069210380f6542360e" version="1">Changer la rareté des livres lus</content>
-	<content contentuid="hf572e1815cb244039806655f8d1558a74383" version="1">Changer la rareté des livres lus</content>
+	<content contentuid="hf572e1815cb244039806655f8d1558a74383" version="1">Change la rareté des livres lus si activé</content>
 	<content contentuid="h2cc857ae3cec46308667926122aaf191a208" version="1">Préfixe pour le nom des livres lus</content>
 	<content contentuid="he7434f404f704342a1b32cb70f1ab5479gcb" version="1">Le préfixe ajouté au nom des livres lus, nécessite de charger la sauvegarde pour en voir l'effet directement</content>
 	<content contentuid="h4344cd70abdf44238a2559580ddbe8aa45fd" version="1">Suffixe pour le nom des livres lus</content>
 	<content contentuid="hc0d8ea81d7414d108b6da4c18c42596bg9g7" version="1">Le suffixe ajouté au nom des livres lus, nécessite de charger la sauvegarde pour en voir l'effet directement</content>
 
+	<content contentuid="hc5a8d296043d418b86712026d61bd51006b4" version="1">Nouvelle rareté des livres lus</content>
+	<content contentuid="hcdb8c321992e4550a302364f97e255dcb83d" version="1">Rareté, de vert à orange</content>
 </contentList>

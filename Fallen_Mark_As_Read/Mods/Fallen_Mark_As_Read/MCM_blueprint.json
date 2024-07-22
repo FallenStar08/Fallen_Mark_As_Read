@@ -39,10 +39,34 @@
                             "Tooltip": "Wheter to update the book rarity when read"
                         },
                         {
+                            "Id": "RARITY",
+                            "Name": "Rarity, from green to orange",
+                            "Type": "slider_int",
+                            "Options": {
+                                "Min": 1,
+                                "Max": 4
+                            },
+                            "Default": 1,
+                            "Handles": {
+                                "NameHandle": "hcdb8c321992e4550a302364f97e255dcb83d",
+                                "TooltipHandle": "hc5a8d296043d418b86712026d61bd51006b4"
+                            },
+                            "Tooltip": "Wheter to update the book rarity when read",
+                            "VisibleIf": {
+                                "Conditions": [
+                                    {
+                                        "SettingId": "UPDATE_RARITY",
+                                        "ExpectedValue": "true",
+                                        "Operator": "=="
+                                    }
+                                ]
+                            }
+                        },
+                        {
                             "Id": "READ_BOOK_PREFIX",
                             "Name": "Read book prefix",
                             "Type": "text",
-                            "Default": "[#",
+                            "Default": "",
                             "Handles": {
                                 "NameHandle": "h2cc857ae3cec46308667926122aaf191a208",
                                 "TooltipHandle": "he7434f404f704342a1b32cb70f1ab5479gcb"
@@ -53,7 +77,7 @@
                             "Id": "READ_BOOK_SUFFIX",
                             "Name": "Read book suffix",
                             "Type": "text",
-                            "Default": "#]",
+                            "Default": "",
                             "Handles": {
                                 "NameHandle": "h4344cd70abdf44238a2559580ddbe8aa45fd",
                                 "TooltipHandle": "hc0d8ea81d7414d108b6da4c18c42596bg9g7"
