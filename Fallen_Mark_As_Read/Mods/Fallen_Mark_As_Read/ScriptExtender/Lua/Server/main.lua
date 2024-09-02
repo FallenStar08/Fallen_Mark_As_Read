@@ -112,7 +112,7 @@ end
 
 --Technically modvars now sadge
 function UpdatePvarsWithAlreadyKnownBooks()
-    ---@type Entity
+    ---@type EntityHandle
     local items = Ext.Entity.GetAllEntitiesWithComponent("ServerItem")
     for k, item in pairs(items) do
         if item.ServerItem.Known == true then
