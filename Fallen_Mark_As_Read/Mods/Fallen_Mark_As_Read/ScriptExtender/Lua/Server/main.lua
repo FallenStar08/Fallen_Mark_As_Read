@@ -4,6 +4,8 @@ MOD_READY = false
 
 ModifiedHandles = {}
 
+local _rarityUpdatedCache = {}
+
 Ext.Osiris.RegisterListener("GameBookInterfaceClosed", 2, "after", function(item, character)
     MarkBookAsRead(item)
 end)
@@ -25,18 +27,20 @@ end
 
 --Updata rarity to green for an item entity
 function UpdateItemRarity(entity, rarity)
-    if GetMCM("UPDATE_RARITY") == true then
+    local uuid = entity.Uuid.EntityUuid
+    if GetMCM("UPDATE_RARITY") == true and not _rarityUpdatedCache[uuid] then
         entity.Value.Rarity = rarity
         entity:Replicate("Value")
         if not entity.Health then
             entity:CreateComponent("Health")
         end
         entity:Replicate("Health")
+        _rarityUpdatedCache[uuid] = true
     else
         return
     end
-    BasicDebug(string.format("Updating Rarity for item : %s with bookID : %s", entity.Uuid.EntityUuid,
-        Osi.GetBookID(entity.Uuid.EntityUuid)))
+    BasicDebug(string.format("Updating Rarity for item : %s with bookID : %s", uuid,
+        Osi.GetBookID(uuid)))
 end
 
 --Update loca handle for read books
@@ -135,6 +139,7 @@ function RestoreHandles()
 end
 
 function Start()
+    _rarityUpdatedCache = {}
     MyVars = GetModVariables()
     if not MyVars.readBooks then
         MyVars.readBooks = {}
@@ -160,12 +165,13 @@ end
 Ext.Osiris.RegisterListener("TemplateAddedTo", 4, "before", function(root, item, inventoryHolder, addType)
     local bookID = Osi.GetBookID(item)
     if bookID and MOD_READY then
-        if MyVars.readBooks and MyVars.readBooks[bookID] then
-            MarkBookAsRead(item)
+        if IsSquady(GUID(inventoryHolder)) then
+            if MyVars.readBooks and MyVars.readBooks[bookID] then
+                MarkBookAsRead(item)
+            end
         end
     end
 end)
-
 
 Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", Start)
 
@@ -179,7 +185,6 @@ Ext.Events.GameStateChanged:Subscribe(function(e)
         UpdateRarityForAllReadBooks()
     end
 end)
-
 
 -- -------------------------------------------------------------------------- --
 --                                     MCM                                    --
